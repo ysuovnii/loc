@@ -2,12 +2,13 @@ import http from 'http';
 import {Server} from 'socket.io';
 import app from './app.js';
 import {initSocket} from './socket/socket.js'
+import {initDB} from './db/connection.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
 const PORT = process.env.PORT || 3000;
 
-const initServer = () => {
+const initServer = async () => {
   const server = http.createServer(app);
 
   const io = new Server(server, {
@@ -16,6 +17,7 @@ const initServer = () => {
     }
   });
 
+  await initDB();
   initSocket(io);
 
   server.on('error', (error) => {

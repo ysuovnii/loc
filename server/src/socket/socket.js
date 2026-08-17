@@ -26,7 +26,14 @@ export const initSocket = (io) => {
 
 
   io.on('connection', (socket) => {
+    const room = getRoom();
     console.log(`[Socket] Client connected: ${socket.id}`);
+
+    socket.join("tracking-room");
+
+    if(socket.role === "viewer" && room?.currentLocation) {
+      socket.emit("location:update", room.currentLocation);
+    }
 
     socket.on('disconnect', () => {
       console.log(`[Socket] Client disconnected: ${socket.id}`);

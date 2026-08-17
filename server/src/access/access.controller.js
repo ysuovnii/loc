@@ -41,6 +41,13 @@ export const handleVerification = (req, res) => {
     const room = getRoom();
     const {accessCode} = req.body;
 
+    if(!room) {
+      return res.status(404).json({
+        success: false,
+        message: "No Active Session"
+      })
+    }
+
     if(!accessCode) {
       return res.status(400).json({
         success: false,
