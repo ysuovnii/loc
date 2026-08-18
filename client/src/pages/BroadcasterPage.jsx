@@ -120,8 +120,8 @@ export default function BroadcasterPage({ accessCode }) {
           : 'waiting';
 
   return (
-    <div className="page dashboard-page broadcaster-page">
-      <header className="dashboard-header">
+    <div className="page dashboard-page broadcaster-page dashboard-enter">
+      <header className="dashboard-header pixel-panel pixel-panel--header">
         <h1 className="dashboard-title">LOCATION TRACKER</h1>
         <StatusIndicator status="BROADCASTING" variant="live" />
       </header>
@@ -134,7 +134,7 @@ export default function BroadcasterPage({ accessCode }) {
         />
       </main>
 
-      <footer className="dashboard-footer">
+      <footer className="dashboard-footer pixel-panel pixel-panel--footer">
         <div className="footer-grid">
           <StatusIndicator
             label="TRACKING"

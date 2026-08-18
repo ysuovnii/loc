@@ -60,8 +60,8 @@ export default function ViewerPage({ accessCode }) {
         : 'waiting';
 
   return (
-    <div className="page dashboard-page viewer-page">
-      <header className="dashboard-header">
+    <div className="page dashboard-page viewer-page dashboard-enter">
+      <header className="dashboard-header pixel-panel pixel-panel--header">
         <h1 className="dashboard-title">LOCATION TRACKER</h1>
         <StatusIndicator
           status={broadcasterStatus === 'LIVE' ? 'LIVE' : broadcasterStatus}
@@ -77,7 +77,7 @@ export default function ViewerPage({ accessCode }) {
         />
       </main>
 
-      <footer className="dashboard-footer">
+      <footer className="dashboard-footer pixel-panel pixel-panel--footer">
         <div className="footer-grid">
           <StatusIndicator
             label="BROADCASTER"

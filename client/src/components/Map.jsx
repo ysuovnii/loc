@@ -1,25 +1,8 @@
 import { useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Tooltip, useMap } from 'react-leaflet';
-import L from 'leaflet';
+import { MapContainer, TileLayer, useMap } from 'react-leaflet';
+import PixelAvatarMarker from './PixelAvatarMarker';
+import PixelZoomControl from './PixelZoomControl';
 import 'leaflet/dist/leaflet.css';
-
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: markerIcon2x,
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow,
-});
-
-const pixelIcon = new L.DivIcon({
-  className: 'pixel-marker',
-  html: '<div class="pixel-marker-inner"></div>',
-  iconSize: [16, 16],
-  iconAnchor: [8, 8],
-});
 
 function MapRecenter({ latitude, longitude }) {
   const map = useMap();
@@ -42,33 +25,49 @@ export default function MapView({ latitude, longitude, label = 'YOU' }) {
 
   return (
     <div className="map-wrapper">
+      <div className="map-pixel-frame" aria-hidden="true">
+        <span className="map-corner map-corner--tl" />
+        <span className="map-corner map-corner--tr" />
+        <span className="map-corner map-corner--bl" />
+        <span className="map-corner map-corner--br" />
+      </div>
+
       {!hasLocation && (
         <div className="map-overlay">
-          <span className="map-overlay-text">WAITING FOR LOCATION</span>
+          <div className="map-overlay-panel pixel-panel">
+            <span className="map-loading-dots" aria-hidden="true">
+              <span /><span /><span />
+            </span>
+            <span className="map-overlay-text">WAITING FOR LOCATION</span>
+          </div>
         </div>
       )}
+
       <MapContainer
         center={defaultCenter}
         zoom={defaultZoom}
         className="map-container"
-        zoomControl
+        zoomControl={false}
         scrollWheelZoom
       >
         <TileLayer
           attribution='&copy; <a href="https://carto.com/">CARTO</a>'
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         />
+        <PixelZoomControl />
         {hasLocation && (
           <>
             <MapRecenter latitude={latitude} longitude={longitude} />
-            <Marker position={[latitude, longitude]} icon={pixelIcon}>
-              <Tooltip permanent direction="top" offset={[0, -12]} className="pixel-tooltip">
-                {label}
-              </Tooltip>
-            </Marker>
+            <PixelAvatarMarker
+              latitude={latitude}
+              longitude={longitude}
+              label={label}
+            />
           </>
         )}
       </MapContainer>
+
+      <div className="map-scanlines" aria-hidden="true" />
     </div>
   );
 }
