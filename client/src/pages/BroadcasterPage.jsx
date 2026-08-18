@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import MapView from '../components/Map';
-import StatusIndicator from '../components/StatusIndicator';
-import LocationInfo from '../components/LocationInfo';
+import ProfileCard from '../components/ProfileCard';
 import { createSocket } from '../services/socket';
+import { reverseGeocode } from '../utils/reverseGeocode';
 
 const GPS_OPTIONS = {
   enableHighAccuracy: true,
@@ -28,25 +28,19 @@ export default function BroadcasterPage({ accessCode }) {
   const watchIdRef = useRef(null);
   const locationRef = useRef(null);
   const [location, setLocation] = useState(null);
-  const [gpsStatus, setGpsStatus] = useState('WAITING FOR LOCATION');
-  const [socketStatus, setSocketStatus] = useState('CONNECTING');
-  const [, setTick] = useState(0);
+  const [locationName, setLocationName] = useState('');
 
   const emitLocation = useCallback((latitude, longitude) => {
     const timestamp = Date.now();
     const next = { latitude, longitude, timestamp };
     locationRef.current = next;
     setLocation(next);
-    setGpsStatus('LIVE');
 
     if (socketRef.current?.connected) {
       socketRef.current.emit('location:update', { latitude, longitude });
     }
-  }, []);
 
-  useEffect(() => {
-    const interval = setInterval(() => setTick((t) => t + 1), 1000);
-    return () => clearInterval(interval);
+    reverseGeocode(latitude, longitude).then(setLocationName);
   }, []);
 
   useEffect(() => {
@@ -54,7 +48,6 @@ export default function BroadcasterPage({ accessCode }) {
     socketRef.current = socket;
 
     const onConnect = () => {
-      setSocketStatus('LIVE');
       const current = locationRef.current;
       if (current?.latitude != null && current?.longitude != null) {
         socket.emit('location:update', {
@@ -63,35 +56,25 @@ export default function BroadcasterPage({ accessCode }) {
         });
       }
     };
-    const onDisconnect = () => setSocketStatus('DISCONNECTED');
 
     socket.on('connect', onConnect);
-    socket.on('disconnect', onDisconnect);
-    socket.on('connect_error', () => setSocketStatus('DISCONNECTED'));
-
     socket.connect();
 
     return () => {
       socket.off('connect', onConnect);
-      socket.off('disconnect', onDisconnect);
       socket.disconnect();
       socketRef.current = null;
     };
   }, [accessCode]);
 
   useEffect(() => {
-    if (!navigator.geolocation) {
-      setGpsStatus('GPS NOT SUPPORTED');
-      return;
-    }
+    if (!navigator.geolocation) return;
 
     watchIdRef.current = navigator.geolocation.watchPosition(
       (position) => {
         emitLocation(position.coords.latitude, position.coords.longitude);
       },
-      (error) => {
-        setGpsStatus(mapGeoError(error));
-      },
+      () => {},
       GPS_OPTIONS,
     );
 
@@ -103,29 +86,8 @@ export default function BroadcasterPage({ accessCode }) {
     };
   }, [emitLocation]);
 
-  const trackingStatus =
-    socketStatus === 'DISCONNECTED'
-      ? 'DISCONNECTED'
-      : gpsStatus === 'LIVE'
-        ? 'LIVE'
-        : gpsStatus;
-
-  const statusVariant =
-    trackingStatus === 'LIVE'
-      ? 'live'
-      : trackingStatus === 'DISCONNECTED'
-        ? 'disconnected'
-        : gpsStatus.includes('DENIED')
-          ? 'denied'
-          : 'waiting';
-
   return (
-    <div className="page dashboard-page broadcaster-page dashboard-enter">
-      <header className="dashboard-header pixel-panel pixel-panel--header">
-        <h1 className="dashboard-title">LOCATION TRACKER</h1>
-        <StatusIndicator status="BROADCASTING" variant="live" />
-      </header>
-
+    <div className="page map-page dashboard-enter">
       <main className="dashboard-main">
         <MapView
           latitude={location?.latitude}
@@ -134,27 +96,7 @@ export default function BroadcasterPage({ accessCode }) {
         />
       </main>
 
-      <footer className="dashboard-footer pixel-panel pixel-panel--footer">
-        <div className="footer-grid">
-          <StatusIndicator
-            label="TRACKING"
-            status={trackingStatus}
-            variant={statusVariant}
-          />
-          <StatusIndicator
-            label="SOCKET"
-            status={socketStatus}
-            variant={socketStatus === 'LIVE' ? 'live' : 'disconnected'}
-          />
-        </div>
-        <LocationInfo location={location} gpsStatus={gpsStatus} />
-        {gpsStatus === 'LOCATION PERMISSION DENIED' && (
-          <p className="help-text">
-            Location permission is required to broadcast your position.
-            Enable location access in your browser settings and reload.
-          </p>
-        )}
-      </footer>
+      <ProfileCard location={location} locationName={locationName} />
     </div>
   );
 }

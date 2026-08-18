@@ -30,10 +30,8 @@ export default function LandingPage({ onConnect }) {
 
   return (
     <div className="page landing-page">
-      <div className="landing-bg-grid" aria-hidden="true" />
-      <div className="landing-bg-glow" aria-hidden="true" />
-
       <div className="landing-content landing-enter">
+        <h1 className="landing-title">DoodhVaala Tracker</h1>
         <AccessForm
           accessCode={accessCode}
           onAccessCodeChange={(value) => {

@@ -37,6 +37,7 @@ export default function AccessForm({
           disabled={disabled}
           maxLength={16}
           aria-label="Access code"
+          placeholder="ENTER CODE"
         />
         {isConnecting && (
           <span className="input-loading-dots" aria-hidden="true">

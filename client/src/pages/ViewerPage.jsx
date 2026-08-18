@@ -1,37 +1,32 @@
 import { useEffect, useRef, useState } from 'react';
 import MapView from '../components/Map';
-import StatusIndicator from '../components/StatusIndicator';
-import LocationInfo, { formatRelativeTime } from '../components/LocationInfo';
+import ProfileCard from '../components/ProfileCard';
 import { createSocket } from '../services/socket';
+import { reverseGeocode } from '../utils/reverseGeocode';
 
 export default function ViewerPage({ accessCode }) {
   const socketRef = useRef(null);
   const [location, setLocation] = useState(null);
-  const [socketStatus, setSocketStatus] = useState('CONNECTING');
-  const [, setTick] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => setTick((t) => t + 1), 1000);
-    return () => clearInterval(interval);
-  }, []);
+  const [locationName, setLocationName] = useState('');
 
   useEffect(() => {
     const socket = createSocket(accessCode);
     socketRef.current = socket;
 
-    const onConnect = () => setSocketStatus('LIVE');
-    const onDisconnect = () => setSocketStatus('DISCONNECTED');
+    const onConnect = () => {};
+    const onDisconnect = () => {};
     const onLocationUpdate = (data) => {
-      setLocation({
+      const loc = {
         latitude: data.latitude,
         longitude: data.longitude,
         timestamp: data.timestamp ?? Date.now(),
-      });
+      };
+      setLocation(loc);
+      reverseGeocode(loc.latitude, loc.longitude).then(setLocationName);
     };
 
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
-    socket.on('connect_error', () => setSocketStatus('DISCONNECTED'));
     socket.on('location:update', onLocationUpdate);
 
     socket.connect();
@@ -41,34 +36,11 @@ export default function ViewerPage({ accessCode }) {
       socket.off('disconnect', onDisconnect);
       socket.off('location:update', onLocationUpdate);
       socket.disconnect();
-      socketRef.current = null;
     };
   }, [accessCode]);
 
-  const broadcasterStatus =
-    socketStatus === 'DISCONNECTED'
-      ? 'DISCONNECTED'
-      : location
-        ? 'LIVE'
-        : 'WAITING FOR LOCATION';
-
-  const statusVariant =
-    broadcasterStatus === 'LIVE'
-      ? 'live'
-      : broadcasterStatus === 'DISCONNECTED'
-        ? 'disconnected'
-        : 'waiting';
-
   return (
-    <div className="page dashboard-page viewer-page dashboard-enter">
-      <header className="dashboard-header pixel-panel pixel-panel--header">
-        <h1 className="dashboard-title">LOCATION TRACKER</h1>
-        <StatusIndicator
-          status={broadcasterStatus === 'LIVE' ? 'LIVE' : broadcasterStatus}
-          variant={statusVariant}
-        />
-      </header>
-
+    <div className="page map-page dashboard-enter">
       <main className="dashboard-main">
         <MapView
           latitude={location?.latitude}
@@ -77,32 +49,7 @@ export default function ViewerPage({ accessCode }) {
         />
       </main>
 
-      <footer className="dashboard-footer pixel-panel pixel-panel--footer">
-        <div className="footer-grid">
-          <StatusIndicator
-            label="BROADCASTER"
-            status={broadcasterStatus}
-            variant={statusVariant}
-          />
-          <StatusIndicator
-            label="SOCKET"
-            status={socketStatus}
-            variant={socketStatus === 'LIVE' ? 'live' : 'disconnected'}
-          />
-        </div>
-        <div className="info-row">
-          <span className="info-key">LAST UPDATE</span>
-          <span className="info-val">{formatRelativeTime(location?.timestamp)}</span>
-        </div>
-        {location && (
-          <LocationInfo location={location} showCoords={false} />
-        )}
-        {!location && socketStatus === 'LIVE' && (
-          <p className="help-text">
-            Connected. Waiting for the broadcaster to share their location.
-          </p>
-        )}
-      </footer>
+      <ProfileCard location={location} locationName={locationName} />
     </div>
   );
 }
