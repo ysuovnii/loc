@@ -3,14 +3,17 @@ import { Marker } from 'react-leaflet';
 import L from 'leaflet';
 import { loadPixelAvatar } from '../utils/pixelateImage';
 
-function createAvatarIcon(dataUrl) {
+function createAvatarIcon(dataUrl, isViewer = false) {
+  const accentColor = isViewer ? '#f0a030' : '#00e5a0';
+  const accentGlow = isViewer ? 'rgba(240, 160, 48, 0.35)' : 'rgba(0, 229, 160, 0.35)';
+
   return L.divIcon({
     className: 'avatar-marker-icon',
     html: `
-      <div class="avatar-marker">
+      <div class="avatar-marker" style="--marker-accent: ${accentColor}; --marker-glow: ${accentGlow}">
         <span class="avatar-marker-ring avatar-marker-ring--outer"></span>
         <span class="avatar-marker-ring avatar-marker-ring--inner"></span>
-        <img class="avatar-marker-img" src="${dataUrl}" alt="You" draggable="false" />
+        <img class="avatar-marker-img" src="${dataUrl}" alt="Marker" draggable="false" />
         <span class="avatar-marker-pin"></span>
       </div>
     `,
@@ -20,7 +23,7 @@ function createAvatarIcon(dataUrl) {
   });
 }
 
-export default function PixelAvatarMarker({ latitude, longitude, label = 'YOU' }) {
+export default function PixelAvatarMarker({ latitude, longitude, label = 'YOU', isViewer = false }) {
   const [icon, setIcon] = useState(null);
 
   useEffect(() => {
@@ -28,7 +31,7 @@ export default function PixelAvatarMarker({ latitude, longitude, label = 'YOU' }
 
     loadPixelAvatar()
       .then((dataUrl) => {
-        if (active) setIcon(createAvatarIcon(dataUrl));
+        if (active) setIcon(createAvatarIcon(dataUrl, isViewer));
       })
       .catch(() => {
         if (active) {
@@ -38,6 +41,7 @@ export default function PixelAvatarMarker({ latitude, longitude, label = 'YOU' }
                 encodeURIComponent(
                   '<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72"><rect width="72" height="72" fill="#00e5a0"/></svg>',
                 ),
+              isViewer,
             ),
           );
         }
@@ -46,7 +50,7 @@ export default function PixelAvatarMarker({ latitude, longitude, label = 'YOU' }
     return () => {
       active = false;
     };
-  }, []);
+  }, [isViewer]);
 
   if (!icon) return null;
 

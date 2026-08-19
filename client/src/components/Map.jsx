@@ -1,22 +1,28 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import PixelAvatarMarker from './PixelAvatarMarker';
 import PixelZoomControl from './PixelZoomControl';
 import 'leaflet/dist/leaflet.css';
 
-function MapRecenter({ latitude, longitude }) {
+function MapRecenter({ latitude, longitude, zoomOnFirst = false }) {
   const map = useMap();
+  const hasRecentered = useRef(false);
 
   useEffect(() => {
     if (typeof latitude === 'number' && typeof longitude === 'number') {
-      map.setView([latitude, longitude], map.getZoom(), { animate: true });
+      if (zoomOnFirst && !hasRecentered.current) {
+        hasRecentered.current = true;
+        map.setView([latitude, longitude], 17, { animate: true });
+      } else {
+        map.setView([latitude, longitude], map.getZoom(), { animate: true });
+      }
     }
-  }, [latitude, longitude, map]);
+  }, [latitude, longitude, map, zoomOnFirst]);
 
   return null;
 }
 
-export default function MapView({ latitude, longitude, label = 'YOU' }) {
+export default function MapView({ latitude, longitude, label = 'YOU', zoomOnFirst = false, viewerMarkers = [] }) {
   const hasLocation =
     typeof latitude === 'number' && typeof longitude === 'number';
 
@@ -57,12 +63,25 @@ export default function MapView({ latitude, longitude, label = 'YOU' }) {
         <PixelZoomControl />
         {hasLocation && (
           <>
-            <MapRecenter latitude={latitude} longitude={longitude} />
+            <MapRecenter
+              latitude={latitude}
+              longitude={longitude}
+              zoomOnFirst={zoomOnFirst}
+            />
             <PixelAvatarMarker
               latitude={latitude}
               longitude={longitude}
               label={label}
             />
+            {viewerMarkers.map((vm) => (
+              <PixelAvatarMarker
+                key={vm.id}
+                latitude={vm.latitude}
+                longitude={vm.longitude}
+                label="VIEWER"
+                isViewer
+              />
+            ))}
           </>
         )}
       </MapContainer>

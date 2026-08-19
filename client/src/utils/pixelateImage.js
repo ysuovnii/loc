@@ -6,7 +6,7 @@ export function getAvatarUrl() {
   return AVATAR_URL;
 }
 
-export function pixelateImage(source, gridSize = 18, scale = 4) {
+export function pixelateImage(source, gridSize = 32, scale = 3) {
   const smallCanvas = document.createElement('canvas');
   const smallCtx = smallCanvas.getContext('2d');
   smallCanvas.width = gridSize;
