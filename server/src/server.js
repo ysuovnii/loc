@@ -1,0 +1,30 @@
+import app from './app.js';
+import http from 'http';
+import { Server } from 'socket.io';
+import initDB from './config/db.js';
+import dotenv from 'dotenv';
+
+dotenv.config();
+const PORT = process.env.PORT || 8080;
+
+const server = http.createServer(app);
+
+const initServer = async () => {
+  const io = new Server(server, {
+    cors: {
+      origin: process.env.ORIGIN || "http://localhost:5173",
+    }
+  });
+  await initDB();
+
+  server.on("error", (error) => {
+    console.log(`[Error] Server: ${error}`);
+    process.exit(1);
+  });
+
+  server.listen(PORT, () => {
+    console.log(`[Initial] Server running on PORT: ${PORT}`);
+  });
+}
+
+initServer();
