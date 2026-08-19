@@ -4,30 +4,31 @@ import PixelAvatarMarker from './PixelAvatarMarker';
 import PixelZoomControl from './PixelZoomControl';
 import 'leaflet/dist/leaflet.css';
 
-function MapRecenter({ latitude, longitude, zoomOnFirst = false }) {
+const MAX_ZOOM = 19;
+
+function MapRecenter({ latitude, longitude }) {
   const map = useMap();
   const hasRecentered = useRef(false);
 
   useEffect(() => {
-    if (typeof latitude === 'number' && typeof longitude === 'number') {
-      if (zoomOnFirst && !hasRecentered.current) {
-        hasRecentered.current = true;
-        map.setView([latitude, longitude], 17, { animate: true });
-      } else {
-        map.setView([latitude, longitude], map.getZoom(), { animate: true });
-      }
-    }
-  }, [latitude, longitude, map, zoomOnFirst]);
+    if (hasRecentered.current) return;
+    if (typeof latitude !== 'number' || typeof longitude !== 'number') return;
+
+    hasRecentered.current = true;
+    map.setView([latitude, longitude], MAX_ZOOM, { animate: false });
+  }, [latitude, longitude, map]);
 
   return null;
 }
 
-export default function MapView({ latitude, longitude, label = 'YOU', zoomOnFirst = false }) {
+export default function MapView({ latitude, longitude, label = 'YOU', loadingText = 'WAITING FOR LOCATION', showOverlay, loadingFound = false }) {
   const hasLocation =
     typeof latitude === 'number' && typeof longitude === 'number';
 
-  const defaultCenter = hasLocation ? [latitude, longitude] : [20, 0];
-  const defaultZoom = hasLocation ? 15 : 2;
+  const defaultCenter = hasLocation ? [latitude, longitude] : [0, 0];
+  const defaultZoom = hasLocation ? MAX_ZOOM : 2;
+
+  const showLoader = showOverlay !== undefined ? showOverlay : !hasLocation;
 
   return (
     <div className="map-wrapper">
@@ -38,13 +39,13 @@ export default function MapView({ latitude, longitude, label = 'YOU', zoomOnFirs
         <span className="map-corner map-corner--br" />
       </div>
 
-      {!hasLocation && (
+      {showLoader && (
         <div className="map-overlay">
           <div className="map-overlay-panel pixel-panel">
             <span className="map-loading-dots" aria-hidden="true">
               <span /><span /><span />
             </span>
-            <span className="map-overlay-text">WAITING FOR LOCATION</span>
+            <span className={`map-overlay-text ${loadingFound ? 'map-overlay-text--found' : ''}`}>{loadingText}</span>
           </div>
         </div>
       )}
@@ -63,11 +64,7 @@ export default function MapView({ latitude, longitude, label = 'YOU', zoomOnFirs
         <PixelZoomControl />
         {hasLocation && (
           <>
-            <MapRecenter
-              latitude={latitude}
-              longitude={longitude}
-              zoomOnFirst={zoomOnFirst}
-            />
+            <MapRecenter latitude={latitude} longitude={longitude} />
             <PixelAvatarMarker
               latitude={latitude}
               longitude={longitude}

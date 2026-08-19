@@ -8,6 +8,7 @@ export default function ViewerPage({ accessCode }) {
   const socketRef = useRef(null);
   const [location, setLocation] = useState(null);
   const [locationName, setLocationName] = useState('');
+  const [phase, setPhase] = useState('searching');
 
   useEffect(() => {
     const socket = createSocket(accessCode);
@@ -21,6 +22,11 @@ export default function ViewerPage({ accessCode }) {
       };
       setLocation(loc);
       reverseGeocode(loc.latitude, loc.longitude).then(setLocationName);
+
+      if (phase === 'searching') {
+        setPhase('found');
+        setTimeout(() => setPhase('live'), 600);
+      }
     };
 
     socket.on('location:update', onLocationUpdate);
@@ -32,6 +38,10 @@ export default function ViewerPage({ accessCode }) {
     };
   }, [accessCode]);
 
+  const showOverlay = phase !== 'live';
+  const loadingText =
+    phase === 'found' ? 'BROADCASTER FOUND' : 'LOCATING BROADCASTER...';
+
   return (
     <div className="page map-page dashboard-enter">
       <main className="dashboard-main">
@@ -39,7 +49,9 @@ export default function ViewerPage({ accessCode }) {
           latitude={location?.latitude}
           longitude={location?.longitude}
           label="DOODHVAALA"
-          zoomOnFirst
+          loadingText={loadingText}
+          showOverlay={showOverlay}
+          loadingFound={phase === 'found'}
         />
       </main>
 

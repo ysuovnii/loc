@@ -93,6 +93,7 @@ export default function BroadcasterPage({ accessCode }) {
           latitude={location?.latitude}
           longitude={location?.longitude}
           label="YOU"
+          loadingText="ACQUIRING GPS..."
         />
       </main>
 

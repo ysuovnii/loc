@@ -526,6 +526,11 @@ body {
   text-align: center;
 }
 
+.map-overlay-text--found {
+  color: var(--accent);
+  text-shadow: 0 0 12px var(--accent-glow);
+}
+
 .map-loading-dots {
   display: inline-flex;
   gap: 3px;
