@@ -4,6 +4,8 @@
   "description": "",
   "main": "server.js",
   "scripts": {
+    "install": "npm install",
+    "build": "npm run build",
     "dev": "nodemon src/server.js",
     "test": "nodemon test/socket-test.js"
   },
