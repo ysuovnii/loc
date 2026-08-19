@@ -555,8 +555,6 @@ body {
 }
 
 .avatar-marker {
-  --marker-accent: #00e5a0;
-  --marker-glow: rgba(0, 229, 160, 0.35);
   position: relative;
   width: 72px;
   height: 88px;
@@ -573,7 +571,7 @@ body {
   width: 64px;
   height: 64px;
   margin-left: -32px;
-  border: 2px solid var(--marker-accent);
+  border: 2px solid var(--accent);
   border-radius: 0;
   pointer-events: none;
 }
@@ -584,17 +582,17 @@ body {
 
 .avatar-marker-ring--inner {
   animation: ring-pulse 2s ease-out 0.6s infinite;
-  border-color: color-mix(in srgb, var(--marker-accent) 50%, transparent);
+  border-color: rgba(0, 229, 160, 0.5);
 }
 
 .avatar-marker-img {
   width: 56px;
   height: 56px;
   image-rendering: auto;
-  border: 3px solid var(--marker-accent);
+  border: 3px solid var(--accent);
   background: var(--bg-panel);
   box-shadow:
-    0 0 12px var(--marker-glow),
+    0 0 12px var(--accent-glow),
     4px 4px 0 rgba(0, 0, 0, 0.5);
   object-fit: cover;
   position: relative;
@@ -621,9 +619,9 @@ body {
   margin-bottom: 4px;
   font-family: var(--font-pixel);
   font-size: 7px;
-  color: var(--marker-accent, var(--accent));
+  color: var(--accent);
   background: var(--bg-panel);
-  border: 1px solid var(--marker-accent, var(--accent));
+  border: 1px solid var(--accent);
   padding: 3px 6px;
   white-space: nowrap;
   letter-spacing: 0.06em;

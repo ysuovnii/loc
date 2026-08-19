@@ -29,7 +29,6 @@ export default function BroadcasterPage({ accessCode }) {
   const locationRef = useRef(null);
   const [location, setLocation] = useState(null);
   const [locationName, setLocationName] = useState('');
-  const [viewerMarkers, setViewerMarkers] = useState([]);
 
   const emitLocation = useCallback((latitude, longitude) => {
     const timestamp = Date.now();
@@ -58,31 +57,11 @@ export default function BroadcasterPage({ accessCode }) {
       }
     };
 
-    const onViewerUpdate = (data) => {
-      setViewerMarkers((prev) => {
-        const idx = prev.findIndex((v) => v.id === data.id);
-        if (idx >= 0) {
-          const next = [...prev];
-          next[idx] = { id: data.id, latitude: data.latitude, longitude: data.longitude };
-          return next;
-        }
-        return [...prev, { id: data.id, latitude: data.latitude, longitude: data.longitude }];
-      });
-    };
-
-    const onViewerLeave = (data) => {
-      setViewerMarkers((prev) => prev.filter((v) => v.id !== data.id));
-    };
-
     socket.on('connect', onConnect);
-    socket.on('viewer:update', onViewerUpdate);
-    socket.on('viewer:leave', onViewerLeave);
     socket.connect();
 
     return () => {
       socket.off('connect', onConnect);
-      socket.off('viewer:update', onViewerUpdate);
-      socket.off('viewer:leave', onViewerLeave);
       socket.disconnect();
       socketRef.current = null;
     };
@@ -114,7 +93,6 @@ export default function BroadcasterPage({ accessCode }) {
           latitude={location?.latitude}
           longitude={location?.longitude}
           label="YOU"
-          viewerMarkers={viewerMarkers}
         />
       </main>
 

@@ -9,7 +9,7 @@ export const initLocationSocket = (io) => {
 
       if(!room) return;
       if(socket.role !== "broadcaster") return;
-      if(typeof latitude !== "number" ||typeof longitude !== "number") return;
+      if(typeof latitude !== "number" || typeof longitude !== "number") return;
 
       room.currentLocation = {
         latitude,

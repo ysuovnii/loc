@@ -22,7 +22,7 @@ function MapRecenter({ latitude, longitude, zoomOnFirst = false }) {
   return null;
 }
 
-export default function MapView({ latitude, longitude, label = 'YOU', zoomOnFirst = false, viewerMarkers = [] }) {
+export default function MapView({ latitude, longitude, label = 'YOU', zoomOnFirst = false }) {
   const hasLocation =
     typeof latitude === 'number' && typeof longitude === 'number';
 
@@ -73,15 +73,6 @@ export default function MapView({ latitude, longitude, label = 'YOU', zoomOnFirs
               longitude={longitude}
               label={label}
             />
-            {viewerMarkers.map((vm) => (
-              <PixelAvatarMarker
-                key={vm.id}
-                latitude={vm.latitude}
-                longitude={vm.longitude}
-                label="VIEWER"
-                isViewer
-              />
-            ))}
           </>
         )}
       </MapContainer>
