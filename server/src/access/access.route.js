@@ -1,9 +1,33 @@
 import express from 'express';
-import {handleCreation, handleVerification} from './access.controller.js';
+import { rateLimit } from 'express-rate-limit';
+import { handleCreation, handleVerification } from './access.controller.js';
 import validateAccessCode from './access.middleware.js';
+
 const router = express.Router();
 
-router.post('/create', handleCreation);
-router.post('/verify', validateAccessCode, handleVerification);
+const verifyLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Too many attempts. Please try again later.' },
+});
+
+const adminAuth = (req, res, next) => {
+  const adminSecret = req.headers['x-admin-secret'];
+
+  if (!adminSecret || adminSecret !== process.env.ADMIN_CREATE_SECRET) {
+    console.warn(`[Security] Unauthorized room creation attempt from ${req.ip}`);
+    return res.status(403).json({
+      success: false,
+      message: 'Forbidden',
+    });
+  }
+
+  next();
+};
+
+router.post('/create', adminAuth, handleCreation);
+router.post('/verify', verifyLimiter, validateAccessCode, handleVerification);
 
 export default router;
