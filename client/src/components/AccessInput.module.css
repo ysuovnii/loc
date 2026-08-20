@@ -1,0 +1,75 @@
+.wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+}
+
+.input {
+  width: 100%;
+  padding: 16px 20px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  outline: none;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.input::placeholder {
+  color: var(--text-dim);
+  font-weight: 300;
+}
+
+.input:focus {
+  border-color: var(--accent-dim);
+  box-shadow: 0 0 0 1px var(--accent-dim), 0 0 30px var(--accent-glow);
+  background: rgba(14, 14, 20, 0.92);
+}
+
+.input.error {
+  border-color: rgba(248, 113, 113, 0.5);
+  box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.3);
+}
+
+.input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinner {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: inputSpin 0.8s linear infinite;
+}
+
+@keyframes inputSpin {
+  to { transform: translateY(-50%) rotate(360deg); }
+}
+
+.errorText {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--error);
+  opacity: 0;
+  animation: inputFadeInUp 0.3s ease forwards;
+  padding-left: 4px;
+}
+
+@keyframes inputFadeInUp {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
