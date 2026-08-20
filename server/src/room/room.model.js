@@ -17,6 +17,20 @@ const roomSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  currentLocation: {
+    latitude: {
+      type: Number,
+    },
+    longitude: {
+      type: Number,
+    },
+    accuracy: {
+      type: Number,
+    },
+    updatedAt: {
+      type: Date,
+    },
+  },
 });
 
 const Room = mongoose.model('Room', roomSchema);

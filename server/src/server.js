@@ -1,6 +1,7 @@
 import app from './app.js';
 import http from 'http';
 import { Server } from 'socket.io';
+import {initSocket} from './socket/socket.js'
 import initDB from './config/db.js';
 import dotenv from 'dotenv';
 
@@ -15,8 +16,10 @@ const initServer = async () => {
       origin: process.env.ORIGIN || "http://localhost:5173",
     }
   });
-  await initDB();
 
+  await initDB();
+  initSocket(io);
+  
   server.on("error", (error) => {
     console.log(`[Error] Server: ${error}`);
     process.exit(1);
