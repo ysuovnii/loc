@@ -57,3 +57,31 @@
 :global(.leaflet-control-zoom-out) {
   border-radius: 0 0 8px 8px !important;
 }
+
+/* Styling OpenStreetMap tiles to match dark mode theme */
+.mapContainer :global(.leaflet-tile) {
+  filter: brightness(0.65) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+}
+
+/* Clean attribution badge for OpenStreetMap */
+:global(.leaflet-control-attribution) {
+  background: rgba(14, 14, 20, 0.85) !important;
+  color: var(--text-secondary) !important;
+  font-size: 11px !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 6px !important;
+  padding: 3px 8px !important;
+  margin: 10px !important;
+  backdrop-filter: blur(8px);
+}
+
+:global(.leaflet-control-attribution a) {
+  color: var(--accent) !important;
+  text-decoration: none !important;
+  font-weight: 500;
+}
+
+:global(.leaflet-control-attribution a:hover) {
+  text-decoration: underline !important;
+}
+
