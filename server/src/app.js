@@ -15,8 +15,19 @@ app.use(helmet({
       scriptSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://unpkg.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      imgSrc: ["'self'", "data:", "https://avatars.githubusercontent.com", "https://*.basemaps.cartocdn.com"],
-      connectSrc: ["'self'", "ws:", "wss:"],
+      imgSrc: [
+        "'self'",
+        "data:",
+        "https://avatars.githubusercontent.com",
+        "https://*.tile.openstreetmap.org",
+        "https://tile.openstreetmap.org"
+      ],
+      connectSrc: [
+        "'self'",
+        "ws:",
+        "wss:",
+        "https://nominatim.openstreetmap.org"
+      ],
       objectSrc: ["'none'"],
       frameSrc: ["'none'"],
     },
