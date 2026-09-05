@@ -29,6 +29,58 @@
   50% { opacity: 0.4; }
 }
 
+/* Map Action Controls */
+.controlsPanel {
+  position: absolute;
+  top: 80px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.controlBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-panel-solid);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.controlBtn:hover {
+  background: rgba(26, 26, 38, 0.95);
+  border-color: var(--border-glow);
+  transform: translateY(-1px);
+}
+
+.controlBtn.active {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+}
+
 /* Override Leaflet defaults for dark theme */
 :global(.leaflet-control-zoom) {
   border: none !important;
@@ -85,3 +137,49 @@
   text-decoration: underline !important;
 }
 
+/* Custom Dark Popups */
+:global(.leaflet-popup-content-wrapper) {
+  background: rgba(14, 14, 20, 0.95) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(16px);
+  padding: 4px !important;
+}
+
+:global(.leaflet-popup-tip) {
+  background: rgba(14, 14, 20, 0.95) !important;
+  border: 1px solid var(--border) !important;
+}
+
+:global(.leaflet-popup-content) {
+  margin: 8px 12px !important;
+  font-family: var(--font) !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+}
+
+.popupTitle {
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.popupSub {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 640px) {
+  .controlsPanel {
+    top: 70px;
+    right: 14px;
+  }
+
+  .controlBtn {
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+}
