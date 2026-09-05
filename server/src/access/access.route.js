@@ -1,6 +1,6 @@
 import express from 'express';
 import { rateLimit } from 'express-rate-limit';
-import { handleCreation, handleVerification } from './access.controller.js';
+import { handleCreation, handleVerification, handleGetHistory } from './access.controller.js';
 import validateAccessCode from './access.middleware.js';
 
 const router = express.Router();
@@ -29,5 +29,7 @@ const adminAuth = (req, res, next) => {
 
 router.post('/create', adminAuth, handleCreation);
 router.post('/verify', verifyLimiter, validateAccessCode, handleVerification);
+router.get('/history', handleGetHistory);
 
 export default router;
+
