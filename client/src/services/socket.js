@@ -3,9 +3,15 @@ import { io } from 'socket.io-client';
 let socket = null;
 
 export function connectSocket(accessCode) {
-  if (socket) {
+  if (socket && socket.connected && socket.auth?.accessCode === accessCode) {
     console.log('[Socket] Reusing existing connection');
     return socket;
+  }
+
+  if (socket) {
+    socket.removeAllListeners();
+    socket.disconnect();
+    socket = null;
   }
 
   console.log('[Socket] Connecting to', import.meta.env.VITE_SOCKET_URL);

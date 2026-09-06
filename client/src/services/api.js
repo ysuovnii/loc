@@ -13,11 +13,8 @@ export async function verifyAccessCode(accessCode) {
     const data = await res.json();
 
     if (!res.ok) {
-      if (res.status === 401) {
-        throw new Error('Invalid Access Code');
-      }
-      if (res.status === 400) {
-        throw new Error('Access Code is required');
+      if (res.status === 401 || res.status === 400) {
+        throw new Error('Invalid access code');
       }
       throw new Error(data.message || `Server error (${res.status})`);
     }
@@ -33,7 +30,7 @@ export async function verifyAccessCode(accessCode) {
       console.error('[API] Network error — server unreachable');
       throw new Error('NETWORK_ERROR');
     }
-    if (err.message === 'Invalid Access Code' || err.message === 'Access Code is required') {
+    if (err.message === 'Invalid access code') {
       console.error('[API] Verification failed:', err.message);
       throw err;
     }

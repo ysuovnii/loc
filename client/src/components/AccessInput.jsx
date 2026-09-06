@@ -1,23 +1,47 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { verifyAccessCode } from '../services/api';
 import styles from './AccessInput.module.css';
 
 export default function AccessInput({ onVerified }) {
   const [code, setCode] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [phase, setPhase] = useState('idle');
   const [error, setError] = useState('');
   const inputRef = useRef(null);
 
+  const busy = phase === 'authenticating' || phase === 'established';
+
+  useEffect(() => {
+    if (error) inputRef.current?.focus();
+  }, [error]);
+
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      const active = document.activeElement;
+      const isTyping =
+        active &&
+        (active.tagName === 'INPUT' ||
+          active.tagName === 'TEXTAREA' ||
+          active.isContentEditable);
+      if (isTyping) return;
+      if (e.key.length === 1) {
+        inputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
   const handleSubmit = async () => {
     const trimmed = code.trim();
-    if (!trimmed) return;
+    if (!trimmed || busy) return;
 
-    setLoading(true);
+    setPhase('authenticating');
     setError('');
 
     try {
       const data = await verifyAccessCode(trimmed);
-      onVerified(data.role, trimmed);
+      setPhase('established');
+      window.setTimeout(() => onVerified(data.role, trimmed), 900);
     } catch (err) {
       if (err.message === 'NETWORK_ERROR') {
         setError('Server unreachable');
@@ -28,37 +52,42 @@ export default function AccessInput({ onVerified }) {
       } else {
         setError(err.message || 'Connection failed');
       }
-      inputRef.current?.focus();
-    } finally {
-      setLoading(false);
+      setPhase('idle');
     }
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !loading) handleSubmit();
+    if (e.key === 'Enter') handleSubmit();
   };
 
   return (
     <div className={styles.wrapper}>
-      <input
-        ref={inputRef}
-        className={`${styles.input} ${error ? styles.error : ''}`}
-        type="text"
-        value={code}
-        onChange={(e) => {
-          setCode(e.target.value.toUpperCase());
-          setError('');
-        }}
-        onKeyDown={handleKeyDown}
-        placeholder="Enter access code"
-        maxLength={16}
-        disabled={loading}
-        spellCheck={false}
-        autoComplete="off"
-        autoFocus
-      />
-      {loading && <div className={styles.spinner} />}
-      {error && <div className={styles.errorText}>{error}</div>}
+      <div
+        className={`${styles.inputWrapper} ${code ? styles.hasValue : ''}`}
+        onClick={() => inputRef.current?.focus()}
+      >
+        <span className={styles.displayText}>{code}</span>
+        <input
+          ref={inputRef}
+          className={styles.hiddenInput}
+          type="text"
+          value={code}
+          onChange={(e) => {
+            setCode(e.target.value.toUpperCase());
+            setError('');
+          }}
+          onKeyDown={handleKeyDown}
+          placeholder=""
+          maxLength={16}
+          disabled={busy}
+          spellCheck={false}
+          autoComplete="off"
+        />
+        {!code && (
+          <span className={styles.placeholder}>ENTER ACCESS CODE</span>
+        )}
+      </div>
+      {error && <div className={styles.error}>{error}</div>}
     </div>
   );
 }
