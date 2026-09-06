@@ -1,5 +1,6 @@
 import Room from '../room/room.model.js';
 import crypto from 'node:crypto';
+import { getHistory } from '../history/history.controller.js';
 
 const generateAccessCode = () => {
   return crypto.randomBytes(4).toString('hex').toUpperCase();
@@ -74,3 +75,7 @@ export const handleVerification = async (req, res) => {
     });
   }
 };
+
+export const handleGetHistory = getHistory;
+
+

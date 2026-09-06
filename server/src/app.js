@@ -3,6 +3,7 @@ import helmet from 'helmet';
 import cors from 'cors';
 import { rateLimit } from 'express-rate-limit';
 import accessRouter from './access/access.route.js';
+import historyRouter from './history/history.route.js';
 
 const app = express();
 
@@ -56,6 +57,9 @@ const globalLimiter = rateLimit({
 app.use('/api', globalLimiter);
 
 app.use('/api/access', accessRouter);
+app.use('/api/history', historyRouter);
+app.use('/api/locationhistory', historyRouter);
+app.use('/api/location-history', historyRouter);
 
 app.use((err, _req, res, _next) => {
   console.error(`[Error] Unhandled: ${err.message}`);
