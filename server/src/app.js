@@ -4,6 +4,7 @@ import cors from 'cors';
 import { rateLimit } from 'express-rate-limit';
 import accessRouter from './access/access.route.js';
 import historyRouter from './history/history.route.js';
+import parseOrigins from './config/origins.js';
 
 const app = express();
 
@@ -37,7 +38,7 @@ app.use(helmet({
 }));
 
 app.use(cors({
-  origin: process.env.ORIGIN || "http://localhost:5173",
+  origin: parseOrigins(process.env.ORIGIN),
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type', 'x-admin-secret'],
 }));

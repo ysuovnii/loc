@@ -4,6 +4,7 @@ import { Server } from 'socket.io';
 import { initSocket } from './socket/socket.js';
 import initDB from './config/db.js';
 import dotenv from 'dotenv';
+import parseOrigins from './config/origins.js';
 
 dotenv.config();
 const PORT = process.env.PORT || 8080;
@@ -13,7 +14,7 @@ const server = http.createServer(app);
 const initServer = async () => {
   const io = new Server(server, {
     cors: {
-      origin: process.env.ORIGIN,
+      origin: parseOrigins(process.env.ORIGIN),
       methods: ['GET', 'POST'],
     },
     maxHttpBufferSize: 1e4,
