@@ -1,8 +1,9 @@
 :root {
-  --bg: #08080c;
+  --bg: #000000;
   --bg-panel: rgba(14, 14, 20, 0.82);
   --bg-panel-solid: #0e0e14;
   --border: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.14);
   --border-glow: rgba(100, 180, 255, 0.25);
   --accent: #64b4ff;
   --accent-dim: rgba(100, 180, 255, 0.4);
@@ -10,11 +11,14 @@
   --success: #4ade80;
   --success-dim: rgba(74, 222, 128, 0.5);
   --warn: #fbbf24;
+  --warn-dim: rgba(251, 191, 36, 0.35);
   --error: #f87171;
+  --error-dim: rgba(248, 113, 113, 0.5);
   --text: #e2e8f0;
   --text-secondary: #64748b;
   --text-dim: #334155;
   --radius: 12px;
+  --radius-sm: 8px;
   --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
@@ -78,7 +82,21 @@ body {
 
 @keyframes pulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes mapPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes cardSlideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes inputSpin {
+  to { transform: translateY(-50%) rotate(360deg); }
 }
 
 @keyframes ripple {
@@ -89,4 +107,14 @@ body {
 @keyframes glowPulse {
   0%, 100% { box-shadow: 0 0 8px var(--accent-glow), 0 0 20px rgba(100, 180, 255, 0.05); }
   50% { box-shadow: 0 0 16px var(--accent-dim), 0 0 40px rgba(100, 180, 255, 0.1); }
+}
+
+@keyframes pinRingPulse {
+  0% { transform: translateX(-50%) scale(0.6); opacity: 0.9; }
+  100% { transform: translateX(-50%) scale(2.4); opacity: 0; }
+}
+
+@keyframes viewerHaloPulse {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(2.2); opacity: 0; }
 }

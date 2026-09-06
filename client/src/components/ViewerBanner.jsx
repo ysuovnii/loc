@@ -1,25 +1,15 @@
 import styles from './ViewerBanner.module.css';
+import { statusMeta } from '../services/status';
 
-export default function ViewerBanner({ role, distanceBetween = null, connectionStatus }) {
-  const isViewer = role === 'viewer';
+export default function ViewerBanner({ status }) {
+  const meta = statusMeta(status);
 
   return (
-    <div className={styles.bannerContainer}>
-      <div
-        className={`${styles.statusIndicator} ${
-          isViewer ? styles.viewerDot : styles.broadcasterDot
-        }`}
-      />
-      <span className={styles.title}>
-        {isViewer ? 'Viewer Mode' : 'Broadcaster Mode'}
-      </span>
-      <div className={styles.separator} />
-      <span className={styles.subtitle}>
-        {isViewer ? 'Tracking DOODHVAALA' : 'Transmitting Live GPS'}
-      </span>
-      {distanceBetween && isViewer && (
-        <span className={styles.distanceBadge}>{distanceBetween} away</span>
-      )}
+    <div className={styles.chip}>
+      <span className={styles.appName}>TRACKER</span>
+      <span className={styles.rule} />
+      <span className={`${styles.dot} ${styles[meta.tone]}`} />
+      <span className={styles.status}>{meta.label}</span>
     </div>
   );
 }

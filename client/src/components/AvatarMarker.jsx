@@ -1,79 +1,52 @@
 import L from 'leaflet';
 import styles from './AvatarMarker.module.css';
 
-/**
- * Creates the main tracked user marker: A modern drop pin with the 📍 emoji.
- */
-export function createDropPinIcon() {
+const AVATAR_URL = 'https://avatars.githubusercontent.com/u/104831263?v=4';
+
+export function createAvatarIcon(label = 'YOU') {
   return L.divIcon({
     className: styles.marker,
-    iconSize: [44, 52],
-    iconAnchor: [22, 50],
-    popupAnchor: [0, -48],
+    iconSize: [44, 62],
+    iconAnchor: [22, 42],
+    popupAnchor: [0, -46],
     html: `
-      <div class="${styles.dropPinWrapper}">
-        <div class="${styles.ring}"></div>
-        <div class="${styles.ring}"></div>
-        <div class="${styles.dropPinPointer}"></div>
-        <div class="${styles.dropPinHead}">
-          <span class="${styles.pinEmoji}">📍</span>
-        </div>
+      <div class="${styles.pointerWrap}">
+        <span class="${styles.avatarRing}"></span>
+        <span class="${styles.avatarImg}">
+          <img src="${AVATAR_URL}" alt="" />
+        </span>
+        <span class="${styles.pointerTip}"></span>
+        <span class="${styles.avatarLabel}">${label}</span>
       </div>
     `,
   });
 }
 
-/**
- * Creates the Viewer's self-location marker ("You are here" blue radar dot)
- */
-export function createUserLocationIcon() {
-  return L.divIcon({
-    className: styles.marker,
-    iconSize: [30, 30],
-    iconAnchor: [15, 15],
-    popupAnchor: [0, -15],
-    html: `
-      <div class="${styles.viewerDotWrapper}">
-        <div class="${styles.viewerDotHalo}"></div>
-        <div class="${styles.viewerDotCenter}"></div>
-      </div>
-    `,
-  });
-}
-
-/**
- * Creates the origin marker for the start of the 24-hour history trail
- */
 export function createStartPointIcon() {
   return L.divIcon({
     className: styles.marker,
-    iconSize: [40, 24],
-    iconAnchor: [20, 12],
-    popupAnchor: [0, -14],
+    iconSize: [30, 24],
+    iconAnchor: [15, 22],
+    popupAnchor: [0, -26],
     html: `
-      <div class="${styles.startDotWrapper}">
-        <div class="${styles.startDot}"></div>
+      <div class="${styles.startWrap}">
+        <span class="${styles.startDot}"></span>
         <span class="${styles.startLabel}">START</span>
       </div>
     `,
   });
 }
 
-/**
- * Creates an interactive breadcrumb dot along the history trail
- */
-export function createWaypointIcon() {
+export function createWaypointIcon(opacity = 1) {
   return L.divIcon({
     className: styles.marker,
-    iconSize: [10, 10],
-    iconAnchor: [5, 5],
-    popupAnchor: [0, -8],
-    html: `<div class="${styles.waypointDot}"></div>`,
+    iconSize: [8, 8],
+    iconAnchor: [4, 4],
+    popupAnchor: [0, -10],
+    html: `<div class="${styles.waypoint}" style="opacity:${opacity}"></div>`,
   });
 }
 
-export const dropPinIcon = createDropPinIcon();
-export const avatarIcon = dropPinIcon; // Alias for backward compatibility
-export const userLocationIcon = createUserLocationIcon();
+export const avatarIcon = createAvatarIcon();
 export const startPointIcon = createStartPointIcon();
 export const waypointIcon = createWaypointIcon();

@@ -6,11 +6,12 @@ import {
   formatTime,
   formatTimeAgo,
 } from '../services/geoUtils';
+import { statusMeta } from '../services/status';
 import styles from './ProfileCard.module.css';
 
 export default function ProfileCard({
   role,
-  connectionStatus,
+  status,
   position,
   history = [],
   showHistory = false,
@@ -18,32 +19,24 @@ export default function ProfileCard({
   inspectedPoint = null,
   onSelectHistoricalPoint,
   onResetToLive,
+  broadcasting = true,
+  onToggleBroadcast,
 }) {
-  const [locationName, setLocationName] = useState('Locating...');
+  const isBroadcaster = role === 'broadcaster';
+  const meta = statusMeta(status);
+  const [locationName, setLocationName] = useState('');
+  const [, setTick] = useState(0);
 
-  const displayName = role === 'broadcaster' ? 'YOU' : 'DOODHVAALA';
-  const roleLabel = role === 'broadcaster' ? 'BROADCASTER' : 'VIEWER';
+  useEffect(() => {
+    const id = setInterval(() => setTick((t) => t + 1), 5000);
+    return () => clearInterval(id);
+  }, []);
 
-  const statusLabel =
-    connectionStatus === 'online'
-      ? 'ONLINE'
-      : connectionStatus === 'connecting'
-      ? 'CONNECTING'
-      : 'OFFLINE';
-
-  const dotClass =
-    connectionStatus === 'online'
-      ? styles.dotOnline
-      : connectionStatus === 'connecting'
-      ? styles.dotConnecting
-      : styles.dotOffline;
-
-  // Active position to display (inspected historical point or live position)
   const activePosition = inspectedPoint || position;
 
   useEffect(() => {
     if (!activePosition) {
-      setLocationName('Locating...');
+      setLocationName('');
       return;
     }
 
@@ -57,7 +50,6 @@ export default function ProfileCard({
     };
   }, [activePosition]);
 
-  // Compute 24-hour total distance traveled
   const totalDistanceMeters = calculateTotalDistance([
     ...history,
     ...(position ? [position] : []),
@@ -85,87 +77,99 @@ export default function ProfileCard({
       )
     : scrubberMax;
 
+  const lastUpdated = position?.updatedAt ? formatTimeAgo(position.updatedAt) : '—';
+  const accuracy =
+    position && position.accuracy != null ? `\u00B1${formatDistance(position.accuracy)}` : '—';
+
   return (
-    <div className={styles.card}>
-      <div className={styles.name}>
-        <span>{displayName}</span>
-        <span className={styles.roleTag}>{roleLabel}</span>
+    <div className={styles.panel}>
+      <div className={styles.header}>
+        <span className={styles.title}>
+          {isBroadcaster ? 'BROADCAST' : 'TRACKING'}
+        </span>
+        <span className={styles.status}>
+          <span className={`${styles.dot} ${styles[meta.tone]}`} />
+          <span className={styles.statusText}>{meta.label}</span>
+        </span>
       </div>
 
-      <div className={styles.statusRow}>
-        <div className={`${styles.dot} ${dotClass}`} />
-        <span className={styles.statusText}>{statusLabel}</span>
-      </div>
-
-      <div className={styles.sectionLabel}>
-        {inspectedPoint ? 'INSPECTED LOCATION' : 'CURRENT LOCATION'}
-      </div>
-      <div className={styles.sectionValue}>{locationName}</div>
-
-      <div className={styles.divider} />
-
-      {/* Toggle 24-Hour Location History */}
-      <button
-        className={`${styles.historyBtn} ${showHistory ? styles.historyBtnActive : ''}`}
-        onClick={onToggleHistory}
-      >
-        <div className={styles.historyBtnLabel}>
-          <span>LOCATION HISTORY</span>
-          {showHistory && <span className={styles.historyBadge}>ON</span>}
-        </div>
-        <span className={styles.arrow}>{showHistory ? '▼' : '→'}</span>
-      </button>
-
-      {/* History Details and Scrubber */}
-      {showHistory && (
-        <div className={styles.historyDetails}>
-          <div className={styles.statsGrid}>
-            <div className={styles.statItem}>
-              <div className={styles.statLabel}>24H Traveled</div>
-              <div className={styles.statValue}>
-                {formatDistance(totalDistanceMeters)}
-              </div>
-            </div>
-            <div className={styles.statItem}>
-              <div className={styles.statLabel}>Waypoints</div>
-              <div className={styles.statValue}>
-                {allPoints.length} points
-              </div>
-            </div>
+      <div className={styles.rows}>
+        {isBroadcaster ? (
+          <div className={styles.row}>
+            <span className={styles.rowLabel}>LOCATION</span>
+            <span className={styles.rowValue}>{broadcasting ? 'LIVE' : 'PAUSED'}</span>
           </div>
+        ) : (
+          <div className={styles.row}>
+            <span className={styles.rowLabel}>TARGET</span>
+            <span className={styles.rowValue}>DOODHVAALA</span>
+          </div>
+        )}
 
-          {/* Timeline Scrubber to change the current inspected time/location */}
-          {allPoints.length > 1 && (
-            <div className={styles.scrubberContainer}>
-              <div className={styles.scrubberHeader}>
-                <span className={styles.scrubberLabel}>Time Scrubber</span>
-                <span className={styles.scrubberTime}>
-                  {inspectedPoint
-                    ? formatTime(inspectedPoint.timestamp)
-                    : 'Live (Latest)'}
-                </span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max={scrubberMax}
-                value={currentSliderIndex >= 0 ? currentSliderIndex : scrubberMax}
-                onChange={handleSliderChange}
-                className={styles.slider}
-              />
-            </div>
-          )}
+        <div className={styles.row}>
+          <span className={styles.rowLabel}>UPDATED</span>
+          <span className={styles.rowValue}>{lastUpdated}</span>
+        </div>
 
-          {inspectedPoint && (
-            <div className={styles.inspectNotice}>
-              <span>Viewing past timestamp</span>
-              <button className={styles.resetBtn} onClick={onResetToLive}>
-                Back to Live
+        <div className={styles.row}>
+          <span className={styles.rowLabel}>ACCURACY</span>
+          <span className={styles.rowValue}>{accuracy}</span>
+        </div>
+
+        {locationName && (
+          <div className={styles.row}>
+            <span className={styles.rowLabel}>AREA</span>
+            <span className={styles.rowValue}>{locationName}</span>
+          </div>
+        )}
+      </div>
+
+      {showHistory && allPoints.length > 1 && (
+        <div className={styles.history}>
+          <div className={styles.historyHeader}>
+            <span className={styles.rowLabel}>PATH</span>
+            <span className={styles.rowValue}>
+              {formatDistance(totalDistanceMeters)} &middot; {allPoints.length} pts
+            </span>
+          </div>
+          <input
+            type="range"
+            min="0"
+            max={scrubberMax}
+            value={currentSliderIndex >= 0 ? currentSliderIndex : scrubberMax}
+            onChange={handleSliderChange}
+            className={styles.slider}
+          />
+          <div className={styles.historyFooter}>
+            <span className={styles.historyTime}>
+              {inspectedPoint ? formatTime(inspectedPoint.timestamp) : 'LIVE'}
+            </span>
+            {inspectedPoint && (
+              <button className={styles.linkBtn} onClick={onResetToLive}>
+                BACK TO LIVE
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
+
+      <div className={styles.actions}>
+        <button
+          className={`${styles.toggleBtn} ${showHistory ? styles.toggleBtnActive : ''}`}
+          onClick={onToggleHistory}
+        >
+          {showHistory ? 'HIDE HISTORY' : 'HISTORY'}
+        </button>
+
+        {isBroadcaster && (
+          <button
+            className={`${styles.toggleBtn} ${broadcasting ? styles.stopBtn : styles.startBtn}`}
+            onClick={onToggleBroadcast}
+          >
+            {broadcasting ? 'STOP BROADCAST' : 'RESTART BROADCAST'}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

@@ -9,10 +9,14 @@
   height: 100%;
 }
 
+.mapContainer :global(.leaflet-tile) {
+  filter: brightness(0.65) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+}
+
 .lockingOverlay {
   position: absolute;
   top: 50%;
-  left: 50%;
+  left: 52%;
   transform: translate(-50%, -50%);
   z-index: 1000;
   font-size: 13px;
@@ -24,12 +28,6 @@
   text-transform: uppercase;
 }
 
-@keyframes mapPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-
-/* Map Action Controls */
 .controlsPanel {
   position: absolute;
   top: 80px;
@@ -40,82 +38,29 @@
   gap: 10px;
 }
 
-.controlBtn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.zoomBtn {
+  width: 34px;
+  height: 32px;
   background: var(--bg-panel-solid);
   border: 1px solid var(--border);
-  color: var(--text);
-  padding: 8px 14px;
   border-radius: 10px;
+  color: var(--text-secondary);
   font-family: var(--font);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
+  font-size: 16px;
+  line-height: 1;
   cursor: pointer;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
 }
 
-.controlBtn:hover {
+.zoomBtn:hover {
   background: rgba(26, 26, 38, 0.95);
   border-color: var(--border-glow);
-  transform: translateY(-1px);
+  color: var(--text);
 }
 
-.controlBtn.active {
-  background: rgba(56, 189, 248, 0.15);
-  border-color: var(--accent);
-  color: var(--accent);
-  box-shadow: 0 0 12px var(--accent-glow);
-}
-
-.icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-}
-
-/* Override Leaflet defaults for dark theme */
-:global(.leaflet-control-zoom) {
-  border: none !important;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4) !important;
-}
-
-:global(.leaflet-control-zoom a) {
-  background: var(--bg-panel-solid) !important;
-  color: var(--text-secondary) !important;
-  border: 1px solid var(--border) !important;
-  width: 32px !important;
-  height: 32px !important;
-  line-height: 32px !important;
-  font-size: 14px !important;
-}
-
-:global(.leaflet-control-zoom a:hover) {
-  background: rgba(20, 20, 30, 0.95) !important;
-  color: var(--text) !important;
-}
-
-:global(.leaflet-control-zoom-in) {
-  border-radius: 8px 8px 0 0 !important;
-}
-
-:global(.leaflet-control-zoom-out) {
-  border-radius: 0 0 8px 8px !important;
-}
-
-/* Styling OpenStreetMap tiles to match dark mode theme */
-.mapContainer :global(.leaflet-tile) {
-  filter: brightness(0.65) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
-}
-
-/* Clean attribution badge for OpenStreetMap */
 :global(.leaflet-control-attribution) {
   background: rgba(14, 14, 20, 0.85) !important;
   color: var(--text-secondary) !important;
@@ -137,7 +82,6 @@
   text-decoration: underline !important;
 }
 
-/* Custom Dark Popups */
 :global(.leaflet-popup-content-wrapper) {
   background: rgba(14, 14, 20, 0.95) !important;
   color: var(--text) !important;
@@ -176,10 +120,5 @@
   .controlsPanel {
     top: 70px;
     right: 14px;
-  }
-
-  .controlBtn {
-    padding: 8px 10px;
-    font-size: 11px;
   }
 }

@@ -8,7 +8,7 @@ export const initSocket = (io) => {
       const { accessCode } = socket.handshake.auth;
 
       if (!accessCode || typeof accessCode !== 'string') {
-        return next(new Error('Access code is required'));
+        return next(new Error('Invalid access code'));
       }
 
       const trimmed = accessCode.trim();
@@ -19,7 +19,12 @@ export const initSocket = (io) => {
 
       const normalizedCode = trimmed.toUpperCase();
 
-      const room = await Room.findOne();
+      const room = await Room.findOne({
+        $or: [
+          { broadcasterCode: normalizedCode },
+          { viewerCode: normalizedCode },
+        ],
+      });
       if (!room) return next(new Error('No active tracking session'));
 
       if (normalizedCode === room.broadcasterCode) {

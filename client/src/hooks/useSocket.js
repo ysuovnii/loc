@@ -16,14 +16,21 @@ export function useSocket(accessCode) {
       setStatus('online');
     }
 
-    function onDisconnect() {
-      console.log('[Socket] Disconnected');
-      setStatus('offline');
+    function onDisconnect(reason) {
+      console.log('[Socket] Disconnected:', reason);
+      if (reason === 'io server disconnect') {
+        // Server explicitly kicked us — genuinely offline.
+        setStatus('offline');
+      } else {
+        // Transport drop; socket.io will auto-reconnect, so keep showing connecting.
+        setStatus('connecting');
+      }
     }
 
     function onConnectError(err) {
       console.error('[Socket] Connection error:', err.message);
-      setStatus('offline');
+      // Still retrying (reconnectionAttempts is Infinity) — don't flip to offline.
+      setStatus('connecting');
     }
 
     function onReconnectAttempt(attempt) {

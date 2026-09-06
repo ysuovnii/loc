@@ -5,8 +5,9 @@ import ProfileCard from '../components/ProfileCard';
 import ViewerBanner from '../components/ViewerBanner';
 import { useSocket } from '../hooks/useSocket';
 import { useGeolocation } from '../hooks/useGeolocation';
-import { calculateDistanceMeters, formatDistance } from '../services/geoUtils';
 import styles from './Tracker.module.css';
+
+const STALE_LIMIT_MS = 20 * 1000; // consider the link stale only after this much silence
 
 export default function Tracker() {
   const navigate = useNavigate();
@@ -15,14 +16,12 @@ export default function Tracker() {
   const [broadcasterPosition, setBroadcasterPosition] = useState(null);
   const [viewerPosition, setViewerPosition] = useState(null);
 
-  // 24-Hour Location History State
   const [history, setHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   const [inspectedPoint, setInspectedPoint] = useState(null);
+  const [showInfo, setShowInfo] = useState(false);
 
-  // Viewer's own location & camera focus state
-  const [viewerLocation, setViewerLocation] = useState(null);
-  const [activeFocus, setActiveFocus] = useState('target'); // 'target' | 'viewer'
+  const [broadcasting, setBroadcasting] = useState(true);
 
   useEffect(() => {
     const storedCode = sessionStorage.getItem('accessCode');
@@ -39,7 +38,6 @@ export default function Tracker() {
 
   const { status: socketStatus, socketRef } = useSocket(accessCode);
 
-  // Fetch initial 24-hour location history from server
   useEffect(() => {
     if (!accessCode) return;
     const apiUrl = import.meta.env.VITE_API_URL || '';
@@ -55,10 +53,9 @@ export default function Tracker() {
       });
   }, [accessCode]);
 
-  // Broadcaster emits live GPS location
   const handleBroadcasterLocation = useCallback(
     (coords) => {
-      setBroadcasterPosition(coords);
+      setBroadcasterPosition({ ...coords, updatedAt: new Date() });
       const socket = socketRef.current;
       if (socket && socket.connected) {
         socket.emit('location:update', coords);
@@ -67,12 +64,22 @@ export default function Tracker() {
     [socketRef]
   );
 
-  const { status: gpsStatus } = useGeolocation(
+  const {
+    stop: stopTracking,
+  } = useGeolocation(
     isBroadcaster ? handleBroadcasterLocation : null,
-    isBroadcaster
+    isBroadcaster && broadcasting
   );
 
-  // Socket listeners for real-time location updates & history breadcrumbs
+  const handleToggleBroadcast = useCallback(() => {
+    if (broadcasting) {
+      stopTracking();
+      setBroadcasting(false);
+    } else {
+      setBroadcasting(true);
+    }
+  }, [broadcasting, stopTracking]);
+
   useEffect(() => {
     const socket = socketRef.current;
     if (!socket) return;
@@ -88,7 +95,6 @@ export default function Tracker() {
 
     function onHistoryPoint(point) {
       setHistory((prev) => {
-        // Prevent duplicate IDs
         if (prev.some((p) => p._id === point._id)) return prev;
         return [...prev, point];
       });
@@ -105,86 +111,58 @@ export default function Tracker() {
 
   const displayPosition = isBroadcaster ? broadcasterPosition : viewerPosition;
 
-  // Toggle or acquire viewer's own location ("Show My Location")
-  const handleToggleMyLocation = useCallback(() => {
-    if (activeFocus === 'viewer') {
-      setActiveFocus('target');
-      return;
-    }
+  const hasTargetPosition = Boolean(
+    displayPosition && displayPosition.latitude && displayPosition.longitude
+  );
 
-    if (viewerLocation) {
-      setActiveFocus('viewer');
-      return;
-    }
+  // Data-first status: fresh location data means the link is active, even if the
+  // socket briefly reconnects. Only report OFFLINE when nothing is flowing.
+  const lastUpdatedMs = displayPosition?.updatedAt
+    ? new Date(displayPosition.updatedAt).getTime()
+    : null;
+  const isFresh =
+    hasTargetPosition &&
+    (lastUpdatedMs === null || Date.now() - lastUpdatedMs < STALE_LIMIT_MS);
 
-    if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser.');
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const coords = {
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude,
-          accuracy: pos.coords.accuracy,
-        };
-        setViewerLocation(coords);
-        setActiveFocus('viewer');
-      },
-      (err) => {
-        console.warn('[Viewer Geolocation] Error:', err.message);
-        alert('Could not acquire your current location. Please grant location permissions.');
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
-  }, [activeFocus, viewerLocation]);
-
-  // Calculate distance between viewer and tracked user
-  let distanceBetweenFormatted = null;
-  if (viewerLocation && displayPosition?.latitude && displayPosition?.longitude) {
-    const distMeters = calculateDistanceMeters(
-      viewerLocation.latitude,
-      viewerLocation.longitude,
-      displayPosition.latitude,
-      displayPosition.longitude
-    );
-    distanceBetweenFormatted = formatDistance(distMeters);
+  let linkStatus;
+  if (isBroadcaster && !broadcasting) {
+    linkStatus = 'paused';
+  } else if (isFresh) {
+    linkStatus = 'active';
+  } else if (socketStatus === 'online' || socketStatus === 'connecting') {
+    linkStatus = 'unavailable';
+  } else {
+    linkStatus = 'offline';
   }
 
   return (
     <div className={styles.page}>
-      {/* Top Status Banner */}
-      <ViewerBanner
-        role={role}
-        distanceBetween={distanceBetweenFormatted}
-        connectionStatus={socketStatus}
-      />
+      <ViewerBanner status={linkStatus} />
 
-      {/* Main Leaflet Map View */}
       <MapView
+        role={role}
         position={inspectedPoint || displayPosition}
         history={history}
         showHistory={showHistory}
-        viewerLocation={viewerLocation}
-        activeFocus={activeFocus}
-        onToggleMyLocation={handleToggleMyLocation}
-        onRecenterTarget={() => setActiveFocus('target')}
         onSelectHistoricalPoint={(pt) => setInspectedPoint(pt)}
+        onToggleLocationInfo={() => setShowInfo((prev) => !prev)}
       />
 
-      {/* Bottom Floating Profile Card */}
-      <ProfileCard
-        role={role}
-        connectionStatus={socketStatus}
-        position={displayPosition}
-        history={history}
-        showHistory={showHistory}
-        onToggleHistory={() => setShowHistory((prev) => !prev)}
-        inspectedPoint={inspectedPoint}
-        onSelectHistoricalPoint={(pt) => setInspectedPoint(pt)}
-        onResetToLive={() => setInspectedPoint(null)}
-      />
+      {showInfo && (
+        <ProfileCard
+          role={role}
+          status={linkStatus}
+          position={displayPosition}
+          history={history}
+          showHistory={showHistory}
+          onToggleHistory={() => setShowHistory((prev) => !prev)}
+          inspectedPoint={inspectedPoint}
+          onSelectHistoricalPoint={(pt) => setInspectedPoint(pt)}
+          onResetToLive={() => setInspectedPoint(null)}
+          broadcasting={broadcasting}
+          onToggleBroadcast={handleToggleBroadcast}
+        />
+      )}
     </div>
   );
 }
